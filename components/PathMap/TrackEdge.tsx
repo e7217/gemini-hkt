@@ -3,7 +3,13 @@
 import { EdgeProps, Edge, getBezierPath } from '@xyflow/react';
 import { getEdgeStyle } from '@/lib/graphUtils';
 
-type CustomEdgeData = { track: string; isSubEdge?: boolean; strokeDasharray?: string };
+// BUG-01 + BUG-03 merged: strokeDasharray (from data) + successProbability
+type CustomEdgeData = {
+  track: string;
+  successProbability?: number;  // BUG-03: for dynamic strokeWidth
+  isSubEdge?: boolean;
+  strokeDasharray?: string;     // BUG-01: passed via data instead of style prop
+};
 type CustomEdge = Edge<CustomEdgeData>;
 
 export default function TrackEdge({
@@ -11,8 +17,9 @@ export default function TrackEdge({
   sourcePosition, targetPosition, data, animated,
 }: EdgeProps<CustomEdge>) {
   const [edgePath] = getBezierPath({ sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition });
-  const baseStyle = getEdgeStyle(data?.track ?? 'fast');
-  // BUG-01 FIX: read strokeDasharray from data instead of style prop to avoid conflicts
+  // BUG-03 FIX: pass successProbability for dynamic strokeWidth
+  const baseStyle = getEdgeStyle(data?.track ?? 'fast', data?.successProbability);
+  // BUG-01 FIX: read strokeDasharray from data (subnodes) instead of style prop
   const strokeDasharray = data?.strokeDasharray;
 
   return (

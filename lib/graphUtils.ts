@@ -11,9 +11,17 @@ export const NODE_DIMENSIONS: Record<string, { width: number; height: number }> 
   mergeNode: { width: 100, height: 100 }
 };
 
-export function getEdgeStyle(track: string) {
+/**
+ * BUG-03 FIX: getEdgeStyle now accepts successProbability to vary strokeWidth.
+ * Probability 0-100 maps to strokeWidth 2-6.
+ * Falls back to 3 when no probability is given (backward compatible).
+ */
+export function getEdgeStyle(track: string, successProbability?: number) {
   const color = TRACK_COLORS[track as TrackId] || '#fff';
-  return { stroke: color, strokeWidth: 3, filter: `drop-shadow(0 0 5px ${color})` };
+  const strokeWidth = successProbability != null
+    ? Math.max(2, Math.min(6, Math.round(2 + (successProbability / 100) * 4)))
+    : 3;
+  return { stroke: color, strokeWidth, filter: `drop-shadow(0 0 ${strokeWidth + 2}px ${color})` };
 }
 
 export function pathMapToFlow(pathMap: PathMap, options?: GraphTransformOptions): FlowData {
@@ -39,7 +47,7 @@ export function pathMapToFlow(pathMap: PathMap, options?: GraphTransformOptions)
 
   const processedMergeIds = new Set<string>();
 
-  const addNodesAndEdges = (node: PathNode, trackId: string, prevId: string) => {
+  const addNodesAndEdges = (node: PathNode, trackId: string, prevId: string, successProbability?: number) => {
     const mp = node.isMergePoint ? pathMap.mergePoints?.find(m => m.id === node.id) : undefined;
     let currentId = '';
 
@@ -69,7 +77,8 @@ export function pathMapToFlow(pathMap: PathMap, options?: GraphTransformOptions)
       source: prevId,
       target: currentId,
       type: 'trackEdge',
-      data: { track: trackId }
+      // BUG-03 FIX: pass successProbability into edge data
+      data: { track: trackId, successProbability }
     });
 
     // BUG-01 FIX: Handle subNodes (Expansion C9)
@@ -103,7 +112,7 @@ export function pathMapToFlow(pathMap: PathMap, options?: GraphTransformOptions)
     // This makes branch paths connect from their divergence point instead of Start
     let prevId = track.originNodeId ?? pathMap.startNode.id;
     track.nodes.forEach((node) => {
-      prevId = addNodesAndEdges(node, track.id, prevId);
+      prevId = addNodesAndEdges(node, track.id, prevId, track.successProbability);
     });
 
     edges.push({
@@ -111,7 +120,8 @@ export function pathMapToFlow(pathMap: PathMap, options?: GraphTransformOptions)
       source: prevId,
       target: pathMap.goalNode.id,
       type: 'trackEdge',
-      data: { track: track.id }
+      // BUG-03 FIX: pass successProbability for the final edge too
+      data: { track: track.id, successProbability: track.successProbability }
     });
   });
 

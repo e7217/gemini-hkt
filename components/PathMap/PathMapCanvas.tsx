@@ -71,15 +71,6 @@ export default function PathMapCanvas({ pathMap }: { pathMap: PathMap }) {
   const { nodes, edges } = useMemo(() => pathMapToFlow(pathMap), [pathMap]);
   const debouncedMonths = useDebounce(timelineMonths, 200);
 
-  useEffect(() => {
-    // Optional: when timeline changes and nodes appear, re-fit view or pan
-    if (visibleNodes.length > 0) {
-      setTimeout(() => {
-        fitView({ padding: 0.2, duration: 800 });
-      }, 50);
-    }
-  }, [debouncedMonths, fitView]); // Only trigger when the debounced timeline filter applies
-
   // BUG-01 FIX: when expandNode finishes (isExpanding flips false→true→false), re-fit view
   useEffect(() => {
     if (prevIsExpanding.current && !isExpanding) {
@@ -122,6 +113,15 @@ export default function PathMapCanvas({ pathMap }: { pathMap: PathMap }) {
       },
     }));
   }, [filteredEdges, selectedTrack]);
+
+  useEffect(() => {
+    // Optional: when timeline changes and nodes appear, re-fit view or pan
+    if (visibleNodes.length > 0) {
+      setTimeout(() => {
+        fitView({ padding: 0.2, duration: 800 });
+      }, 50);
+    }
+  }, [debouncedMonths, fitView, visibleNodes.length]); // Trigger when nodes appear due to timeline filter
 
   const handleSelectTrack = (track: TrackId | null) => {
     setSelectedTrack(selectedTrack === track ? null : track);

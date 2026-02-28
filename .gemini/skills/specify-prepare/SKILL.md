@@ -94,9 +94,13 @@ If you are a sub-agent executing inside a worktree (instructed by Step 2.3), fol
     .specify/scripts/bash/update-agent-context.sh gemini
     ```
 
-6.  **Commit Changes**:
-    Stage and commit the generated specification files:
+6.  **Update Documentation**:
+    - Call the `activate_skill` tool with the name `specify-update-docs`.
+    - Following its instructions, update the corresponding feature file in `docs/issues/**/*.md` to change its status to `prepared` and add the `specs/` file links.
+
+7.  **Commit Changes**:
+    Stage and commit the generated specification files and the updated docs:
     ```bash
-    git add <FEATURE_DIR>
-    git commit -m "chore: Prepare specifications for <feature_description>"
+    git add <FEATURE_DIR> docs/issues/
+    git commit -m "chore: Prepare specifications and update docs for <feature_description>"
     ```

@@ -17,10 +17,10 @@
 
 **Purpose**: `lib/prompts.ts` 파일의 기본 구조와 버전 관리 인프라 생성
 
-- [ ] T001 `lib/prompts.ts` 파일 생성 및 JSDoc 헤더(버전, changelog 블록) 작성
-- [ ] T002 `PROMPT_VERSION = "1.0.0"` 상수 정의 및 내보내기
-- [ ] T003 [P] `TIMEFRAME_MONTHS` 상수 정의 ("1y"→12, "3y"→36, "5y"→60) 및 내보내기
-- [ ] T004 [P] BE-02 공유 타입(`PathMap`, `PathNode`, `MergePoint`, `Path`) 임포트 경로 확인
+- [x] T001 `lib/prompts.ts` 파일 생성 및 JSDoc 헤더(버전, changelog 블록) 작성
+- [x] T002 `PROMPT_VERSION = "1.0.0"` 상수 정의 및 내보내기
+- [x] T003 [P] `TIMEFRAME_MONTHS` 상수 정의 ("1y"→12, "3y"→36, "5y"→60) 및 내보내기
+- [x] T004 [P] BE-02 공유 타입(`PathMap`, `PathNode`, `MergePoint`, `Path`) 임포트 경로 확인
 
 ---
 
@@ -30,11 +30,11 @@
 
 **이 Phase가 완료되어야 US2-US5 작업 시작 가능**
 
-- [ ] T005 `PATH_MAP_SCHEMA` 객체 정의: `startNode`, `goalNode`, `paths[]`, `mergePoints[]` 최상위 구조
-- [ ] T006 [P] `PATH_MAP_SCHEMA` - `paths[]` 항목 스키마 정의: `id` (enum: fast/deep/explorer), `name`, `color`, `nodes[]`
-- [ ] T007 [P] `PATH_MAP_SCHEMA` - `PathNode` 스키마 정의: 모든 필수 필드 (`id`, `title`, `description`, `duration`, `difficulty` enum, `isMergePoint`, `tips[]`, `monthsFromNow`)
-- [ ] T008 `PATH_MAP_SCHEMA` - `mergePoints[]` 스키마 정의: `id`, `title`, `connectedPaths[]` (minItems: 2), `message`
-- [ ] T009 `PATH_MAP_SCHEMA` 내보내기 및 TypeScript 타입 호환성 확인
+- [x] T005 `PATH_MAP_SCHEMA` 객체 정의: `startNode`, `goalNode`, `paths[]`, `mergePoints[]` 최상위 구조
+- [x] T006 [P] `PATH_MAP_SCHEMA` - `paths[]` 항목 스키마 정의: `id` (enum: fast/deep/explorer), `name`, `color`, `nodes[]`
+- [x] T007 [P] `PATH_MAP_SCHEMA` - `PathNode` 스키마 정의: 모든 필수 필드 (`id`, `title`, `description`, `duration`, `difficulty` enum, `isMergePoint`, `tips[]`, `monthsFromNow`)
+- [x] T008 `PATH_MAP_SCHEMA` - `mergePoints[]` 스키마 정의: `id`, `title`, `connectedPaths[]` (minItems: 2), `message`
+- [x] T009 `PATH_MAP_SCHEMA` 내보내기 및 TypeScript 타입 호환성 확인
 
 **Checkpoint**: JSON 스키마 정의 완료 - US1/US3 작업 시작 가능
 
@@ -48,13 +48,13 @@
 
 ### Implementation for User Story 1
 
-- [ ] T010 [US1] `SYSTEM_INSTRUCTION` 초안 작성: 역할 부여 섹션 ("You are a life path simulator...")
-- [ ] T011 [US1] `SYSTEM_INSTRUCTION` - 경로 유형 정의 섹션 추가: fast (4-5 nodes), deep (5-6 nodes), explorer (4-5 nodes), 각 경로의 성격 설명
-- [ ] T012 [US1] `SYSTEM_INSTRUCTION` - JSON 전용 출력 지시 섹션 추가: "Respond ONLY with valid JSON. No markdown, no explanation."
-- [ ] T013 [US1] `SYSTEM_INSTRUCTION` - 합류점 생성 규칙 섹션 추가: 최소 1-2개, isMergePoint: true 규칙, connectedPaths 필수, 감성적 message 한국어 작성 지시
-- [ ] T014 [US1] `SYSTEM_INSTRUCTION` - monthsFromNow 단조 증가 규칙 섹션 추가
-- [ ] T015 [US1] `SYSTEM_INSTRUCTION` 내보내기 및 문자열 형식 최종 확인
-- [ ] T016 [US1] `SYSTEM_INSTRUCTION` 토큰 길이 검토 (Gemini Flash 컨텍스트 적합성)
+- [x] T010 [US1] `SYSTEM_INSTRUCTION` 초안 작성: 역할 부여 섹션 ("You are a life path simulator...")
+- [x] T011 [US1] `SYSTEM_INSTRUCTION` - 경로 유형 정의 섹션 추가: fast (4-5 nodes), deep (5-6 nodes), explorer (4-5 nodes), 각 경로의 성격 설명
+- [x] T012 [US1] `SYSTEM_INSTRUCTION` - JSON 전용 출력 지시 섹션 추가: "Respond ONLY with valid JSON. No markdown, no explanation."
+- [x] T013 [US1] `SYSTEM_INSTRUCTION` - 합류점 생성 규칙 섹션 추가: 최소 1-2개, isMergePoint: true 규칙, connectedPaths 필수, 감성적 message 한국어 작성 지시
+- [x] T014 [US1] `SYSTEM_INSTRUCTION` - monthsFromNow 단조 증가 규칙 섹션 추가
+- [x] T015 [US1] `SYSTEM_INSTRUCTION` 내보내기 및 문자열 형식 최종 확인
+- [x] T016 [US1] `SYSTEM_INSTRUCTION` 토큰 길이 검토 (Gemini Flash 컨텍스트 적합성)
 
 **Checkpoint**: US1 완료 - SYSTEM_INSTRUCTION 내보내기 가능, BE-06에서 사용 준비됨
 
@@ -68,11 +68,11 @@
 
 ### Implementation for User Story 2
 
-- [ ] T017 [US2] `buildUserPrompt` 함수 시그니처 정의: `(goal: string, timeframe: "1y" | "3y" | "5y") => string`
-- [ ] T018 [US2] `buildUserPrompt` - 목표 및 타임프레임 섹션 구성: goal 변수 삽입, `TIMEFRAME_MONTHS[timeframe]`으로 개월 수 계산
-- [ ] T019 [US2] `buildUserPrompt` - 한국어 응답 강제 지시 추가: "반드시 한국어로 응답하세요" 명시
-- [ ] T020 [US2] `buildUserPrompt` - monthsFromNow 범위 지시 추가: 0부터 해당 타임프레임 개월 수까지 범위 명시
-- [ ] T021 [US2] `buildUserPrompt` 내보내기 및 TypeScript 반환 타입 확인
+- [x] T017 [US2] `buildUserPrompt` 함수 시그니처 정의: `(goal: string, timeframe: "1y" | "3y" | "5y") => string`
+- [x] T018 [US2] `buildUserPrompt` - 목표 및 타임프레임 섹션 구성: goal 변수 삽입, `TIMEFRAME_MONTHS[timeframe]`으로 개월 수 계산
+- [x] T019 [US2] `buildUserPrompt` - 한국어 응답 강제 지시 추가: "반드시 한국어로 응답하세요" 명시
+- [x] T020 [US2] `buildUserPrompt` - monthsFromNow 범위 지시 추가: 0부터 해당 타임프레임 개월 수까지 범위 명시
+- [x] T021 [US2] `buildUserPrompt` 내보내기 및 TypeScript 반환 타입 확인
 
 **Checkpoint**: US2 완료 - buildUserPrompt 함수 사용 준비됨
 
@@ -86,11 +86,11 @@
 
 ### Implementation for User Story 3
 
-- [ ] T022 [US3] BE-02의 `PathMap`, `PathNode`, `MergePoint`, `Path` 인터페이스와 `PATH_MAP_SCHEMA` 필드별 대조 검증
-- [ ] T023 [US3] `difficulty` enum ["Low", "Medium", "High"] 스키마 일치 확인
-- [ ] T024 [US3] `paths[].id` enum ["fast", "deep", "explorer"] 스키마 일치 확인
-- [ ] T025 [US3] `mergePoints[].connectedPaths` minItems: 2 제약 조건 확인
-- [ ] T026 [US3] `PATH_MAP_SCHEMA` TypeScript 타입 안전성 최종 확인 (tsc --noEmit)
+- [x] T022 [US3] BE-02의 `PathMap`, `PathNode`, `MergePoint`, `Path` 인터페이스와 `PATH_MAP_SCHEMA` 필드별 대조 검증
+- [x] T023 [US3] `difficulty` enum ["Low", "Medium", "High"] 스키마 일치 확인
+- [x] T024 [US3] `paths[].id` enum ["fast", "deep", "explorer"] 스키마 일치 확인
+- [x] T025 [US3] `mergePoints[].connectedPaths` minItems: 2 제약 조건 확인
+- [x] T026 [US3] `PATH_MAP_SCHEMA` TypeScript 타입 안전성 최종 확인 (tsc --noEmit)
 
 **Checkpoint**: US3 완료 - JSON 스키마가 TypeScript 인터페이스와 완전히 일치함
 
@@ -104,13 +104,13 @@
 
 ### Implementation for User Story 4
 
-- [ ] T027 [US4] Few-shot 예시 목표 선정: "소프트웨어 엔지니어 되기" (타임프레임 3년)
-- [ ] T028 [US4] Few-shot 예시 - fast 경로 노드 4개 작성 (한국어, monthsFromNow 단조 증가)
-- [ ] T029 [P] [US4] Few-shot 예시 - deep 경로 노드 5개 작성 (한국어, monthsFromNow 단조 증가)
-- [ ] T030 [P] [US4] Few-shot 예시 - explorer 경로 노드 4개 작성 (한국어, monthsFromNow 단조 증가)
-- [ ] T031 [US4] Few-shot 예시 - mergePoints 배열 1개 작성: connectedPaths ["fast", "deep"] 또는 전체 경로, 감성적 한국어 message
-- [ ] T032 [US4] Few-shot 예시를 `buildUserPrompt` 함수에 통합 (User Prompt 내 별도 섹션으로 구분)
-- [ ] T033 [US4] Few-shot 예시 포함 후 전체 프롬프트 토큰 길이 재검토
+- [x] T027 [US4] Few-shot 예시 목표 선정: "소프트웨어 엔지니어 되기" (타임프레임 3년)
+- [x] T028 [US4] Few-shot 예시 - fast 경로 노드 4개 작성 (한국어, monthsFromNow 단조 증가)
+- [x] T029 [P] [US4] Few-shot 예시 - deep 경로 노드 5개 작성 (한국어, monthsFromNow 단조 증가)
+- [x] T030 [P] [US4] Few-shot 예시 - explorer 경로 노드 4개 작성 (한국어, monthsFromNow 단조 증가)
+- [x] T031 [US4] Few-shot 예시 - mergePoints 배열 1개 작성: connectedPaths ["fast", "deep"] 또는 전체 경로, 감성적 한국어 message
+- [x] T032 [US4] Few-shot 예시를 `buildUserPrompt` 함수에 통합 (User Prompt 내 별도 섹션으로 구분)
+- [x] T033 [US4] Few-shot 예시 포함 후 전체 프롬프트 토큰 길이 재검토
 
 **Checkpoint**: US4 완료 - Few-shot 포함 buildUserPrompt 함수 완성
 
@@ -124,9 +124,9 @@
 
 ### Implementation for User Story 5
 
-- [ ] T034 [US5] Phase 1에서 생성한 `PROMPT_VERSION = "1.0.0"` 최종 확인
-- [ ] T035 [US5] 파일 상단 JSDoc changelog 블록 완성: `@version 1.0.0`, `@changelog` 섹션에 날짜/변경내용 기록
-- [ ] T036 [US5] `PROMPT_VERSION` 내보내기 TypeScript 컴파일 확인
+- [x] T034 [US5] Phase 1에서 생성한 `PROMPT_VERSION = "1.0.0"` 최종 확인
+- [x] T035 [US5] 파일 상단 JSDoc changelog 블록 완성: `@version 1.0.0`, `@changelog` 섹션에 날짜/변경내용 기록
+- [x] T036 [US5] `PROMPT_VERSION` 내보내기 TypeScript 컴파일 확인
 
 **Checkpoint**: US5 완료 - 버전 관리 체계 완성
 
@@ -136,11 +136,11 @@
 
 **Purpose**: 전체 모듈 품질 향상 및 BE-06 통합 준비
 
-- [ ] T037 [P] `lib/prompts.ts` 전체 내보내기 목록 최종 점검: `PROMPT_VERSION`, `SYSTEM_INSTRUCTION`, `PATH_MAP_SCHEMA`, `buildUserPrompt`, `TIMEFRAME_MONTHS`
-- [ ] T038 [P] TypeScript strict 모드 호환성 확인 (`tsc --strict --noEmit`)
-- [ ] T039 [P] ESLint 검사 실행 및 경고 해결
-- [ ] T040 `quickstart.md`의 검증 단계 따라 프롬프트 문자열 출력 확인 (scripts/test-prompt.ts)
-- [ ] T041 BE-06 개발자를 위한 `contracts/prompts-module.md` 정확성 최종 검토
+- [x] T037 [P] `lib/prompts.ts` 전체 내보내기 목록 최종 점검: `PROMPT_VERSION`, `SYSTEM_INSTRUCTION`, `PATH_MAP_SCHEMA`, `buildUserPrompt`, `TIMEFRAME_MONTHS`
+- [x] T038 [P] TypeScript strict 모드 호환성 확인 (`tsc --strict --noEmit`)
+- [x] T039 [P] ESLint 검사 실행 및 경고 해결
+- [x] T040 `quickstart.md`의 검증 단계 따라 프롬프트 문자열 출력 확인 (scripts/test-prompt.ts)
+- [x] T041 BE-06 개발자를 위한 `contracts/prompts-module.md` 정확성 최종 검토
 
 ---
 

@@ -84,7 +84,7 @@ export default function PathMapCanvas({ pathMap }: { pathMap: PathMap }) {
   };
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full min-h-[600px]" style={{ flex: 1 }}>
       <ReactFlow
         nodes={visibleNodes}
         edges={visibleEdges}
@@ -94,10 +94,11 @@ export default function PathMapCanvas({ pathMap }: { pathMap: PathMap }) {
         fitView
         minZoom={0.3}
         maxZoom={2.0}
+        style={{ width: '100%', height: '100%' }}
       >
         <Background variant={BackgroundVariant.Dots} color="#333" gap={20} />
       </ReactFlow>
-      
+
       <TrackLegend selectedTrack={selectedTrack} onSelectTrack={handleSelectTrack} />
       <TimelineSlider />
       <DetailPanel node={selectedNode} isOpen={isPanelOpen} onClose={handlePanelClose} />

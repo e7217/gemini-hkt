@@ -1,7 +1,3 @@
-/**
- * Application-wide constants and shared type definitions.
- */
-
 export type TrackType = 'fast' | 'deep' | 'risk';
 
 export type TrackColors = Record<TrackType, string>;

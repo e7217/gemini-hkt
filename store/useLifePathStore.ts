@@ -10,7 +10,7 @@ interface LifePathStore {
   isExpanding: boolean;
   pathMap: PathMap | null;
   error: string | null;
-  
+
   // UI State
   selectedTrack: TrackId | null;
   selectedNode: any | null;
@@ -24,7 +24,7 @@ interface LifePathStore {
   expandNode: (nodeId: string) => Promise<void>;
   clearError: () => void;
   reset: () => void;
-  
+
   // UI Actions
   setSelectedTrack: (track: TrackId | null) => void;
   setSelectedNode: (node: any | null) => void;
@@ -40,7 +40,7 @@ export const useLifePathStore = create<LifePathStore>((set, get) => ({
   isExpanding: false,
   pathMap: null,
   error: null,
-  
+
   selectedTrack: null,
   selectedNode: null,
   isPanelOpen: false,
@@ -96,20 +96,28 @@ export const useLifePathStore = create<LifePathStore>((set, get) => ({
       }
 
       const newBranchData = await response.json();
-      
+
+      // BUG-02 FIX: determine the canvas node ID of the selected node
+      // selectedNode carries the canvas node's id via `nodeId` field set in graphUtils,
+      // but its full canvas ID is `${track}-${nodeId}`. We stored it as data.id in PathMapCanvas.
+      // The clicked node's React Flow id is available via selectedNode._flowNodeId if we pass it,
+      // but for simplicity we reconstruct it: `${pathId}-${nodeId}` matches addNodesAndEdges logic.
+      const originCanvasNodeId = `${pathId}-${nodeId}`;
+
       set((state) => {
         if (!state.pathMap) return state;
-        
-        // Find the node to connect the new branch to
-        // Normally graphUtils would handle this if we structure it right, but for React Flow,
-        // we might just need to ensure the new path starts at the right node.
-        // For simplicity, we just append the paths and mergePoints. The UI will render them.
-        
+
+        // BUG-02 FIX: inject originNodeId into each new path so graphUtils connects from there
+        const patchedPaths = (newBranchData.paths || []).map((p: any) => ({
+          ...p,
+          originNodeId: originCanvasNodeId,
+        }));
+
         return {
           ...state,
           pathMap: {
             ...state.pathMap,
-            paths: [...state.pathMap.paths, ...(newBranchData.paths || [])],
+            paths: [...state.pathMap.paths, ...patchedPaths],
             mergePoints: [...state.pathMap.mergePoints, ...(newBranchData.mergePoints || [])],
           },
           isBranching: false,
@@ -120,6 +128,7 @@ export const useLifePathStore = create<LifePathStore>((set, get) => ({
       set({ error: errorMessage, isBranching: false });
     }
   },
+
   expandNode: async (nodeId) => {
     const { pathMap, goal, selectedNode } = get();
     if (!pathMap || !selectedNode) return;
@@ -142,10 +151,10 @@ export const useLifePathStore = create<LifePathStore>((set, get) => ({
       }
 
       const expandData = await response.json();
-      
+
       set((state) => {
         if (!state.pathMap) return state;
-        
+
         const updateNodeRecursively = (nodes: any[]): any[] => {
           return nodes.map((node) => {
             if (node.id === nodeId) {
@@ -178,7 +187,7 @@ export const useLifePathStore = create<LifePathStore>((set, get) => ({
   },
   clearError: () => set({ error: null }),
   reset: () => set({ goal: '', isReverse: false, isLoading: false, isBranching: false, isExpanding: false, pathMap: null, error: null, selectedTrack: null, selectedNode: null, isPanelOpen: false, timelineMonths: 36 }),
-  
+
   setSelectedTrack: (track) => set({ selectedTrack: track }),
   setSelectedNode: (node) => set({ selectedNode: node }),
   setIsPanelOpen: (isOpen) => set({ isPanelOpen: isOpen }),

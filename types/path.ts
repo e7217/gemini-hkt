@@ -37,7 +37,10 @@ export interface Path {
   successProbability?: number; // e.g., 85 for 85%
   difficulty?: "Low" | "Medium" | "High";
   nodes: PathNode[];
+  /** BUG-02 FIX: canvas node ID this branch diverges from (undefined for base 3 tracks) */
+  originNodeId?: string;
 }
+
 
 /**
  * StartGoalNode is a simplified node for startNode and goalNode in PathMap.

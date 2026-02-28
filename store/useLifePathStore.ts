@@ -1,15 +1,22 @@
 import { create } from 'zustand';
-import type { PathMap } from '@/types/path';
+import type { PathMap, PathNode } from '@/types/path';
+import type { TrackId } from '@/lib/trackColors';
 
 interface LifePathStore {
   goal: string;
   isLoading: boolean;
   pathMap: PathMap | null;
   error: string | null;
+  selectedNode: PathNode | null;
+  selectedTrack: TrackId | null;
+  isPanelOpen: boolean;
   setGoal: (goal: string) => void;
   generatePath: () => Promise<void>;
   clearError: () => void;
   reset: () => void;
+  setSelectedNode: (node: PathNode | null) => void;
+  setSelectedTrack: (track: TrackId | null) => void;
+  setIsPanelOpen: (open: boolean) => void;
 }
 
 const getErrorMessage = (err: unknown): string => {
@@ -25,6 +32,9 @@ export const useLifePathStore = create<LifePathStore>((set, get) => ({
   isLoading: false,
   pathMap: null,
   error: null,
+  selectedNode: null,
+  selectedTrack: null,
+  isPanelOpen: false,
   setGoal: (goal) => set({ goal }),
   generatePath: async () => {
     if (get().goal.trim() === '') return;
@@ -46,4 +56,7 @@ export const useLifePathStore = create<LifePathStore>((set, get) => ({
   },
   clearError: () => set({ error: null }),
   reset: () => set({ goal: '', isLoading: false, pathMap: null, error: null }),
+  setSelectedNode: (node) => set({ selectedNode: node }),
+  setSelectedTrack: (track) => set({ selectedTrack: track }),
+  setIsPanelOpen: (open) => set({ isPanelOpen: open }),
 }));

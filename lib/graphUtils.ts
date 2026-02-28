@@ -54,7 +54,7 @@ export function pathMapToFlow(pathMap: PathMap, options?: GraphTransformOptions)
           nodes.push({
             id: mp.id,
             type: 'mergeNode',
-            data: { label: mp.title, message: mp.message },
+            data: { ...mp, type: 'merge', label: mp.title },
             position: { x: 0, y: 0 }
           });
         }
@@ -70,7 +70,7 @@ export function pathMapToFlow(pathMap: PathMap, options?: GraphTransformOptions)
         nodes.push({
           id: node.id,
           type: 'stepNode',
-          data: { label: node.title, track: track.id, nodeId: node.id },
+          data: { ...node, label: node.title, track: track.id, nodeId: node.id },
           position: { x: 0, y: 0 }
         });
         edges.push({

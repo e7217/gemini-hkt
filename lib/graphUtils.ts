@@ -99,7 +99,9 @@ export function pathMapToFlow(pathMap: PathMap, options?: GraphTransformOptions)
   };
 
   pathMap.paths.forEach(track => {
-    let prevId = pathMap.startNode.id;
+    // BUG-02 FIX: if path has an originNodeId, start the first edge from there
+    // This makes branch paths connect from their divergence point instead of Start
+    let prevId = track.originNodeId ?? pathMap.startNode.id;
     track.nodes.forEach((node) => {
       prevId = addNodesAndEdges(node, track.id, prevId);
     });
@@ -112,6 +114,7 @@ export function pathMapToFlow(pathMap: PathMap, options?: GraphTransformOptions)
       data: { track: track.id }
     });
   });
+
 
   const g = new dagre.graphlib.Graph();
   g.setGraph({ rankdir: options?.direction || 'BT', nodesep: 80, ranksep: 120 });

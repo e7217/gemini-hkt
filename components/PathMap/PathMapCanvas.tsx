@@ -118,6 +118,16 @@ export default function PathMapCanvas({ pathMap }: { pathMap: PathMap }) {
     if (node.type === 'startNode' || node.type === 'goalNode') return;
     setSelectedNode(node.data as any);
     setIsPanelOpen(true);
+    // Highlight branch if the node belongs to a specific track
+    if (node.data?.track) {
+      setSelectedTrack(node.data.track as TrackId);
+    }
+  };
+
+  const handleEdgeClick = (_event: React.MouseEvent, edge: any) => {
+    if (edge.data?.track) {
+      setSelectedTrack(edge.data.track as TrackId);
+    }
   };
 
   const handlePanelClose = () => {
@@ -138,6 +148,7 @@ export default function PathMapCanvas({ pathMap }: { pathMap: PathMap }) {
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         onNodeClick={handleNodeClick}
+        onEdgeClick={handleEdgeClick}
         fitView
         fitViewOptions={{ padding: 0.2 }}
         minZoom={0.3}

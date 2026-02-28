@@ -1,8 +1,13 @@
 'use client';
 
+import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 import { TRACK_COLORS, TRACK_LABELS, TRACK_TEXT_COLORS, TrackId } from '@/lib/trackColors';
+import { useLifePathStore } from '@/store/useLifePathStore';
 
 interface DetailPanelProps {
   node: any | null; // Using any here to accommodate both PathNode and MergeNode data
@@ -11,7 +16,19 @@ interface DetailPanelProps {
 }
 
 export function DetailPanel({ node, isOpen, onClose }: DetailPanelProps) {
+  const { addBranch, isBranching } = useLifePathStore();
+  const [condition, setCondition] = useState('');
+
   if (!node) return null;
+
+  const handleAddBranch = async () => {
+    if (!condition.trim()) return;
+    // Assuming node.id contains the node ID and node.track contains the path ID.
+    // In React Flow, node.id is the actual node ID. node.track should be the path ID.
+    const pathId = node.track || 'custom';
+    await addBranch(pathId, node.id, condition);
+    setCondition('');
+  };
 
   return (
     <div
@@ -56,6 +73,35 @@ export function DetailPanel({ node, isOpen, onClose }: DetailPanelProps) {
         <CardContent>
           {renderMergeInfo(node)}
           {renderTips(node)}
+
+          <section className="mt-8 border-t pt-6">
+            <h3 className="font-semibold mb-3 flex items-center gap-2">🔀 조건 분기 (What-if)</h3>
+            <p className="text-sm text-muted-foreground mb-3">
+              이 시점에서 만약 다른 선택을 한다면 어떻게 될까요?
+            </p>
+            <div className="flex flex-col gap-2">
+              <Input
+                placeholder="예: 창업을 한다면?"
+                value={condition}
+                onChange={(e) => setCondition(e.target.value)}
+                disabled={isBranching}
+              />
+              <Button 
+                onClick={handleAddBranch} 
+                disabled={!condition.trim() || isBranching}
+                className="w-full"
+              >
+                {isBranching ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    생성 중...
+                  </>
+                ) : (
+                  '새로운 경로 생성'
+                )}
+              </Button>
+            </div>
+          </section>
         </CardContent>
       </Card>
     </div>

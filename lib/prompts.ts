@@ -154,3 +154,53 @@ ${instruction}
 목표: ${goal}
 기간: ${timeframe}`;
 }
+
+export const BRANCH_RESPONSE_SCHEMA = z.object({
+  paths: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      color: z.string(),
+      nodes: z.array(
+        z.object({
+          id: z.string(),
+          title: z.string(),
+          description: z.string(),
+          duration: z.string(),
+          difficulty: z.enum(["Low", "Medium", "High"]),
+          isMergePoint: z.boolean(),
+          tips: z.array(z.string()),
+          monthsFromNow: z.number().min(0),
+        })
+      ),
+    })
+  ).min(1),
+  mergePoints: z.array(
+    z.object({
+      id: z.string(),
+      title: z.string(),
+      connectedPaths: z.array(z.string()).min(2),
+      message: z.string(),
+    })
+  ).optional(),
+});
+
+export const BRANCH_SYSTEM_INSTRUCTION = `Role: You are a life path simulator. You are generating a conditional branch path ("what-if" scenario) starting from a specific node in an existing life path.
+
+Output Format: Respond ONLY with valid JSON. Strictly follow the provided JSON schema. Do not include startNode or goalNode.
+
+Rules:
+- The generated sub-path should represent an alternative route based on the provided condition.
+- The sub-path MUST logically follow the starting node's timeline (monthsFromNow should be strictly greater than the starting node's monthsFromNow).
+- You may include merge points if the new branch eventually connects back to an existing path, but it's optional.
+- All content fields MUST be in Korean.`;
+
+export function buildBranchPrompt(condition: string, startingNodeTitle: string, startingNodeMonths: number, goal: string): string {
+  return `최종 목표: ${goal}
+분기 시작점: ${startingNodeTitle} (${startingNodeMonths}개월 시점)
+조건/상황: "만약 ${condition}?"
+
+위 조건이 발생했을 때 나타날 수 있는 1개의 새로운 하위 경로(sub-path)를 생성해주세요.
+이 새로운 경로의 첫 번째 노드는 분기 시작점 이후(${startingNodeMonths}개월 초과)의 시점을 가져야 합니다.
+결과를 JSON으로 반환하세요.`;
+}

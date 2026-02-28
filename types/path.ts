@@ -17,6 +17,8 @@ export interface PathNode {
   title: string;
   description: string;
   duration: string;                        // e.g., "1-3개월"
+  timeEstimate?: string;                   // e.g., "주 10시간"
+  opportunityCost?: string;                // e.g., "여가 시간 포기"
   difficulty: "Low" | "Medium" | "High";
   isMergePoint: boolean;
   tips: string[];

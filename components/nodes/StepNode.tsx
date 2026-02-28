@@ -5,7 +5,7 @@ import { TRACK_COLORS, getTrackBgColor, getTrackGlowColor, TrackId } from '@/lib
 import { useTheme } from 'next-themes';
 import { AlertCircle } from 'lucide-react';
 
-// BUG-01: extended to include isSubNode flag
+// BUG-01: isSubNode flag for visual distinction of expanded sub-steps
 interface StepNodeData {
   label: string;
   track: string;
@@ -22,8 +22,11 @@ export default function StepNode({ data }: { data: StepNodeData }) {
   const bgColor = getTrackBgColor(trackId, resolvedTheme);
   const glowColor = getTrackGlowColor(trackId, resolvedTheme);
 
-  // BUG-01 FIX: subNode gets smaller, slightly transparent style to distinguish visually
+  // BUG-01 FIX: subNode gets a smaller, dashed-border style to distinguish visually
   const isSubNode = data.isSubNode === true;
+  // BUG-04: track presence of metadata icons
+  const hasOpportunityCost = !!data.opportunityCost;
+  const hasTimeEstimate = !!data.timeEstimate;
 
   return (
     <div
@@ -39,9 +42,24 @@ export default function StepNode({ data }: { data: StepNodeData }) {
     >
       <Handle type="target" position={Position.Bottom} className="opacity-0" />
 
-      {data.opportunityCost && (
-        <div className="absolute top-1 right-1 text-orange-500" title={`기회 비용: ${data.opportunityCost}`}>
+      {/* BUG-04: 기회비용 아이콘 — 주황색 경고 (우측 상단) */}
+      {hasOpportunityCost && (
+        <div
+          className="absolute top-1 right-1 text-orange-500 hover:text-orange-400 transition-colors"
+          title={`💸 기회 비용: ${data.opportunityCost}`}
+        >
           <AlertCircle size={isSubNode ? 10 : 14} />
+        </div>
+      )}
+
+      {/* BUG-04: 예상 시간 아이콘 — 파란색 시계 (기회비용이 있으면 그 왼쪽) */}
+      {hasTimeEstimate && (
+        <div
+          className={`absolute top-1 text-blue-400 hover:text-blue-300 transition-colors ${hasOpportunityCost ? (isSubNode ? 'right-5' : 'right-6') : 'right-1'
+            }`}
+          title={`⏱ 예상 시간: ${data.timeEstimate}`}
+        >
+          <span className={`font-bold leading-none select-none ${isSubNode ? 'text-[8px]' : 'text-[9px]'}`}>⏱</span>
         </div>
       )}
 

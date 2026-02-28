@@ -23,7 +23,7 @@ export function getEdgeStyle(track: string) {
 export function pathMapToFlow(pathMap: PathMap, options?: GraphTransformOptions): FlowData {
   const nodes: FlowNode[] = [];
   const edges: FlowEdge[] = [];
-  
+
   if (!pathMap) return { nodes, edges };
 
   // Add start and goal
@@ -67,20 +67,21 @@ export function pathMapToFlow(pathMap: PathMap, options?: GraphTransformOptions)
         });
         prevId = node.id;
       } else {
+        const uniqueId = `${track.id}-${node.id}`;
         nodes.push({
-          id: node.id,
+          id: uniqueId,
           type: 'stepNode',
           data: { ...node, label: node.title, track: track.id, nodeId: node.id },
           position: { x: 0, y: 0 }
         });
         edges.push({
-          id: `e-${prevId}-${node.id}`,
+          id: `e-${prevId}-${uniqueId}`,
           source: prevId,
-          target: node.id,
+          target: uniqueId,
           type: 'trackEdge',
           data: { track: track.id }
         });
-        prevId = node.id;
+        prevId = uniqueId;
       }
     });
 

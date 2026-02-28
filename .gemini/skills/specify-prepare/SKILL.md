@@ -104,3 +104,7 @@ If you are a sub-agent executing inside a worktree (instructed by Step 2.3), fol
     git add <FEATURE_DIR> docs/issues/
     git commit -m "chore: Prepare specifications and update docs for <feature_description>"
     ```
+
+7.  **Update Issue Status**:
+    - If this feature was generated from an existing issue in `docs/issues/`, invoke the `specify-docs` skill to update the status of that issue to `in-progress`.
+    - Stage and commit this documentation update to the feature branch.

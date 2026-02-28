@@ -37,6 +37,7 @@ export interface Path {
   successProbability?: number; // e.g., 85 for 85%
   difficulty?: "Low" | "Medium" | "High";
   nodes: PathNode[];
+  originNodeId?: string; // canvas node ID this branch diverges from (BUG-02/03)
 }
 
 /**

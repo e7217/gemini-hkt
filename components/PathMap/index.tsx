@@ -5,6 +5,8 @@ import type { PathMap } from '@/types/path';
 
 const PathMapCanvas = dynamic(() => import('./PathMapCanvas'), { ssr: false });
 
+import { ReactFlowProvider } from '@xyflow/react';
+
 export default function PathMap({ pathMap }: { pathMap: PathMap }) {
   if (!pathMap || !pathMap.paths || pathMap.paths.length === 0) {
     return (
@@ -16,7 +18,9 @@ export default function PathMap({ pathMap }: { pathMap: PathMap }) {
 
   return (
     <div className="w-full h-full min-h-[600px] border border-border rounded-xl overflow-hidden relative">
-      <PathMapCanvas pathMap={pathMap} />
+      <ReactFlowProvider>
+        <PathMapCanvas pathMap={pathMap} />
+      </ReactFlowProvider>
     </div>
   );
 }

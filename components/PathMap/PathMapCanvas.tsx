@@ -14,6 +14,9 @@ import { useLifePathStore } from '@/store/useLifePathStore';
 import { TrackLegend } from '../TrackLegend';
 import { DetailPanel } from '../DetailPanel';
 import { TrackId } from '@/lib/trackColors';
+import { useDebounce } from '@/hooks/useDebounce';
+import { filterNodesByMonths, filterEdgesByNodes } from '@/lib/timelineFilter';
+import { TimelineSlider } from '../TimelineSlider';
 
 const nodeTypes = {
   startNode: StartNode,
@@ -27,13 +30,23 @@ const edgeTypes = {
 };
 
 export default function PathMapCanvas({ pathMap }: { pathMap: PathMap }) {
-  const { selectedTrack, setSelectedTrack, selectedNode, setSelectedNode, isPanelOpen, setIsPanelOpen } = useLifePathStore();
+  const { selectedTrack, setSelectedTrack, selectedNode, setSelectedNode, isPanelOpen, setIsPanelOpen, timelineMonths } = useLifePathStore();
 
   const { nodes, edges } = useMemo(() => pathMapToFlow(pathMap), [pathMap]);
+  const debouncedMonths = useDebounce(timelineMonths, 200);
+
+  const filteredNodes = useMemo(() => {
+    return filterNodesByMonths(nodes, debouncedMonths);
+  }, [nodes, debouncedMonths]);
+
+  const filteredEdges = useMemo(() => {
+    const visibleNodeIds = new Set(filteredNodes.map((n) => n.id));
+    return filterEdgesByNodes(edges, visibleNodeIds);
+  }, [edges, filteredNodes]);
 
   const visibleNodes = useMemo(() => {
-    if (!selectedTrack) return nodes;
-    return nodes.map((n) => ({
+    if (!selectedTrack) return filteredNodes;
+    return filteredNodes.map((n) => ({
       ...n,
       style: {
         ...n.style,
@@ -41,11 +54,11 @@ export default function PathMapCanvas({ pathMap }: { pathMap: PathMap }) {
         transition: 'opacity 0.3s ease',
       },
     }));
-  }, [nodes, selectedTrack]);
+  }, [filteredNodes, selectedTrack]);
 
   const visibleEdges = useMemo(() => {
-    if (!selectedTrack) return edges;
-    return edges.map((e) => ({
+    if (!selectedTrack) return filteredEdges;
+    return filteredEdges.map((e) => ({
       ...e,
       style: {
         ...e.style,
@@ -53,7 +66,7 @@ export default function PathMapCanvas({ pathMap }: { pathMap: PathMap }) {
         transition: 'opacity 0.3s ease',
       },
     }));
-  }, [edges, selectedTrack]);
+  }, [filteredEdges, selectedTrack]);
 
   const handleSelectTrack = (track: TrackId | null) => {
     setSelectedTrack(selectedTrack === track ? null : track);
@@ -86,6 +99,7 @@ export default function PathMapCanvas({ pathMap }: { pathMap: PathMap }) {
       </ReactFlow>
       
       <TrackLegend selectedTrack={selectedTrack} onSelectTrack={handleSelectTrack} />
+      <TimelineSlider />
       <DetailPanel node={selectedNode} isOpen={isPanelOpen} onClose={handlePanelClose} />
     </div>
   );

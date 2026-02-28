@@ -10,6 +10,7 @@ interface LifePathStore {
   selectedNode: PathNode | null;
   selectedTrack: TrackId | null;
   isPanelOpen: boolean;
+  timelineMonths: number;
   setGoal: (goal: string) => void;
   generatePath: () => Promise<void>;
   clearError: () => void;
@@ -17,6 +18,7 @@ interface LifePathStore {
   setSelectedNode: (node: PathNode | null) => void;
   setSelectedTrack: (track: TrackId | null) => void;
   setIsPanelOpen: (open: boolean) => void;
+  setTimelineMonths: (months: number) => void;
 }
 
 const getErrorMessage = (err: unknown): string => {
@@ -35,6 +37,7 @@ export const useLifePathStore = create<LifePathStore>((set, get) => ({
   selectedNode: null,
   selectedTrack: null,
   isPanelOpen: false,
+  timelineMonths: 36,
   setGoal: (goal) => set({ goal }),
   generatePath: async () => {
     if (get().goal.trim() === '') return;
@@ -59,4 +62,5 @@ export const useLifePathStore = create<LifePathStore>((set, get) => ({
   setSelectedNode: (node) => set({ selectedNode: node }),
   setSelectedTrack: (track) => set({ selectedTrack: track }),
   setIsPanelOpen: (open) => set({ isPanelOpen: open }),
+  setTimelineMonths: (months) => set({ timelineMonths: months }),
 }));

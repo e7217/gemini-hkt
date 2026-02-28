@@ -6,6 +6,7 @@ import { TRACK_COLORS, TrackId } from '@/lib/trackColors';
 export const NODE_DIMENSIONS: Record<string, { width: number; height: number }> = {
   startNode: { width: 80, height: 80 },
   stepNode: { width: 200, height: 80 },
+  subStepNode: { width: 160, height: 64 }, // BUG-01: smaller dimensions for subnodes
   goalNode: { width: 120, height: 120 },
   mergeNode: { width: 100, height: 100 }
 };
@@ -71,26 +72,25 @@ export function pathMapToFlow(pathMap: PathMap, options?: GraphTransformOptions)
       data: { track: trackId }
     });
 
-    // Handle subNodes (Expansion C9)
+    // BUG-01 FIX: Handle subNodes (Expansion C9)
+    // Use 'subStepNode' type for smaller visual + proper dagre dimensions
     if (node.subNodes && node.subNodes.length > 0) {
       node.subNodes.forEach((sub: PathNode, subIdx: number) => {
         const subId = `sub-${currentId}-${sub.id || subIdx}`;
         nodes.push({
           id: subId,
-          type: 'stepNode',
+          type: 'subStepNode', // distinct type for dagre sizing + StepNode styling
           data: { ...sub, label: sub.title, track: trackId, nodeId: sub.id, isSubNode: true },
           position: { x: 0, y: 0 },
-          // Make subnodes look slightly different or smaller?
-          // For now just standard
         });
         edges.push({
           id: `e-${currentId}-${subId}`,
           source: currentId,
           target: subId,
           type: 'trackEdge',
-          data: { track: trackId, isSubEdge: true },
+          // BUG-01 FIX: pass strokeDasharray via data, not style, so TrackEdge can read it
+          data: { track: trackId, isSubEdge: true, strokeDasharray: '5 5' },
           animated: true,
-          style: { strokeDasharray: '5 5' }
         });
       });
     }
@@ -118,6 +118,7 @@ export function pathMapToFlow(pathMap: PathMap, options?: GraphTransformOptions)
   g.setDefaultEdgeLabel(() => ({}));
 
   nodes.forEach(n => {
+    // BUG-01 FIX: subStepNode uses smaller dimensions so dagre lays them out correctly
     const dim = NODE_DIMENSIONS[n.type as string] || { width: 100, height: 100 };
     g.setNode(n.id, { width: dim.width, height: dim.height });
   });

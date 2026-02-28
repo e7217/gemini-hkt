@@ -9,7 +9,7 @@ import StepNode from '../nodes/StepNode';
 import GoalNode from '../nodes/GoalNode';
 import MergeNode from '../nodes/MergeNode';
 import TrackEdge from './TrackEdge';
-import { useMemo, useState, useCallback, useEffect } from 'react';
+import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { useLifePathStore } from '@/store/useLifePathStore';
 import { TrackLegend } from '../TrackLegend';
 import { DetailPanel } from '../DetailPanel';
@@ -22,6 +22,7 @@ import { useTheme } from 'next-themes';
 const nodeTypes = {
   startNode: StartNode,
   stepNode: StepNode,
+  subStepNode: StepNode, // BUG-01 FIX: register subStepNode type (reuses StepNode with isSubNode=true)
   goalNode: GoalNode,
   mergeNode: MergeNode,
 };
@@ -32,8 +33,10 @@ const edgeTypes = {
 
 export default function PathMapCanvas({ pathMap }: { pathMap: PathMap }) {
   const { resolvedTheme } = useTheme();
-  const { selectedTrack, setSelectedTrack, selectedNode, setSelectedNode, isPanelOpen, setIsPanelOpen, timelineMonths, setTimelineMonths } = useLifePathStore();
+  const { selectedTrack, setSelectedTrack, selectedNode, setSelectedNode, isPanelOpen, setIsPanelOpen, timelineMonths, setTimelineMonths, isExpanding } = useLifePathStore();
   const { fitView } = useReactFlow();
+  // BUG-01 FIX: track previous isExpanding to detect when expand finishes
+  const prevIsExpanding = useRef(false);
 
   const [isTimeTravelMode, setIsTimeTravelMode] = useState(false);
 
@@ -76,6 +79,16 @@ export default function PathMapCanvas({ pathMap }: { pathMap: PathMap }) {
       }, 50);
     }
   }, [debouncedMonths, fitView]); // Only trigger when the debounced timeline filter applies
+
+  // BUG-01 FIX: when expandNode finishes (isExpanding flips false→true→false), re-fit view
+  useEffect(() => {
+    if (prevIsExpanding.current && !isExpanding) {
+      setTimeout(() => {
+        fitView({ padding: 0.2, duration: 800 });
+      }, 100);
+    }
+    prevIsExpanding.current = isExpanding;
+  }, [isExpanding, fitView]);
 
   const filteredNodes = useMemo(() => {
     return filterNodesByMonths(nodes, debouncedMonths);

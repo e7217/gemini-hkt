@@ -47,9 +47,10 @@ export function pathMapToFlow(pathMap: PathMap, options?: GraphTransformOptions)
     let prevId = pathMap.startNode.id;
     track.nodes.forEach((node, idx) => {
       // Avoid duplicate step nodes if they are merge points
-      if (node.isMergePoint) {
-        const mp = pathMap.mergePoints?.find(m => m.id === node.id);
-        if (mp && !processedMergeIds.has(mp.id)) {
+      const mp = node.isMergePoint ? pathMap.mergePoints?.find(m => m.id === node.id) : undefined;
+
+      if (mp) {
+        if (!processedMergeIds.has(mp.id)) {
           processedMergeIds.add(mp.id);
           nodes.push({
             id: mp.id,

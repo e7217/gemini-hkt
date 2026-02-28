@@ -91,6 +91,7 @@ export interface AnonymousSession {
 export type SimulateRequest = {
   goal: string;
   timeframe?: "1y" | "3y" | "5y";
+  isReverse?: boolean;
 };
 
 /**

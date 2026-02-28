@@ -8,6 +8,7 @@ import type { PathMap } from '@/types/path';
 export const SimulateRequestSchema = z.object({
   goal: z.string().min(1).max(500),
   timeframe: z.enum(['1y', '3y', '5y']).default('3y'),
+  isReverse: z.boolean().optional(),
 });
 
 function parseRequest(rawBody: unknown) {
@@ -16,8 +17,8 @@ function parseRequest(rawBody: unknown) {
   return result.data;
 }
 
-async function callGeminiForMap(goal: string, timeframe: '1y' | '3y' | '5y'): Promise<PathMap | null> {
-  const prompt = buildUserPrompt(goal, timeframe);
+async function callGeminiForMap(goal: string, timeframe: '1y' | '3y' | '5y', isReverse: boolean = false): Promise<PathMap | null> {
+  const prompt = buildUserPrompt(goal, timeframe, isReverse);
   try {
     const result = await callGemini({
       prompt,
@@ -32,13 +33,13 @@ async function callGeminiForMap(goal: string, timeframe: '1y' | '3y' | '5y'): Pr
   }
 }
 
-async function callGeminiWithRetry(goal: string, timeframe: '1y' | '3y' | '5y'): Promise<PathMap | null> {
-  console.log(`[Simulate API] Calling Gemini for goal: ${goal} (${timeframe}) - Attempt 1`);
-  let result = await callGeminiForMap(goal, timeframe);
+async function callGeminiWithRetry(goal: string, timeframe: '1y' | '3y' | '5y', isReverse: boolean = false): Promise<PathMap | null> {
+  console.log(`[Simulate API] Calling Gemini for goal: ${goal} (${timeframe}, reverse: ${isReverse}) - Attempt 1`);
+  let result = await callGeminiForMap(goal, timeframe, isReverse);
   if (result) return result;
 
-  console.log(`[Simulate API] Attempt 1 failed. Calling Gemini for goal: ${goal} (${timeframe}) - Attempt 2`);
-  result = await callGeminiForMap(goal, timeframe);
+  console.log(`[Simulate API] Attempt 1 failed. Calling Gemini for goal: ${goal} (${timeframe}, reverse: ${isReverse}) - Attempt 2`);
+  result = await callGeminiForMap(goal, timeframe, isReverse);
   return result;
 }
 
@@ -61,7 +62,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const pathMap = await callGeminiWithRetry(parsed.goal, parsed.timeframe);
+    const pathMap = await callGeminiWithRetry(parsed.goal, parsed.timeframe, parsed.isReverse);
     if (!pathMap) {
       console.warn(`[Simulate API] Gemini failed twice. Falling back to mock data.`);
       return NextResponse.json(getMockPathMap(parsed.goal));

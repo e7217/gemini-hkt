@@ -11,6 +11,8 @@ export function GoalInput() {
   const isLoading = useLifePathStore((s) => s.isLoading);
   const error = useLifePathStore((s) => s.error);
   const setGoal = useLifePathStore((s) => s.setGoal);
+  const isReverse = useLifePathStore((s) => s.isReverse);
+  const setIsReverse = useLifePathStore((s) => s.setIsReverse);
   const generatePath = useLifePathStore((s) => s.generatePath);
   const clearError = useLifePathStore((s) => s.clearError);
 
@@ -37,6 +39,19 @@ export function GoalInput() {
             onChange={(e) => setGoal(e.target.value)}
             disabled={isLoading}
           />
+          <div className="flex items-center gap-2 mb-2">
+            <input
+              type="checkbox"
+              id="reverse-planning"
+              checked={isReverse}
+              onChange={(e) => setIsReverse(e.target.checked)}
+              disabled={isLoading}
+              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+            />
+            <label htmlFor="reverse-planning" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-foreground">
+              역산 기법 (목표에서 역순으로 계획)
+            </label>
+          </div>
           <div className="flex gap-2">
             <Button
               type="button"

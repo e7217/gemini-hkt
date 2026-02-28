@@ -4,6 +4,7 @@ import { TrackId } from '@/lib/trackColors';
 
 interface LifePathStore {
   goal: string;
+  isReverse: boolean;
   isLoading: boolean;
   pathMap: PathMap | null;
   error: string | null;
@@ -15,6 +16,7 @@ interface LifePathStore {
   timelineMonths: number;
 
   setGoal: (goal: string) => void;
+  setIsReverse: (isReverse: boolean) => void;
   generatePath: () => Promise<void>;
   clearError: () => void;
   reset: () => void;
@@ -28,6 +30,7 @@ interface LifePathStore {
 
 export const useLifePathStore = create<LifePathStore>((set, get) => ({
   goal: '',
+  isReverse: false,
   isLoading: false,
   pathMap: null,
   error: null,
@@ -38,6 +41,7 @@ export const useLifePathStore = create<LifePathStore>((set, get) => ({
   timelineMonths: 36,
 
   setGoal: (goal) => set({ goal }),
+  setIsReverse: (isReverse) => set({ isReverse }),
   generatePath: async () => {
     if (get().goal.trim() === '') return;
     set({ isLoading: true, error: null });
@@ -46,7 +50,7 @@ export const useLifePathStore = create<LifePathStore>((set, get) => ({
       const response = await fetch('/api/paths/simulate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ goal: get().goal }),
+        body: JSON.stringify({ goal: get().goal, isReverse: get().isReverse }),
       });
 
       if (!response.ok) {
@@ -63,7 +67,7 @@ export const useLifePathStore = create<LifePathStore>((set, get) => ({
     }
   },
   clearError: () => set({ error: null }),
-  reset: () => set({ goal: '', isLoading: false, pathMap: null, error: null, selectedTrack: null, selectedNode: null, isPanelOpen: false, timelineMonths: 36 }),
+  reset: () => set({ goal: '', isReverse: false, isLoading: false, pathMap: null, error: null, selectedTrack: null, selectedNode: null, isPanelOpen: false, timelineMonths: 36 }),
   
   setSelectedTrack: (track) => set({ selectedTrack: track }),
   setSelectedNode: (node) => set({ selectedNode: node }),

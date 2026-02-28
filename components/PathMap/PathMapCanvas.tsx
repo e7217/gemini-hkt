@@ -65,6 +65,9 @@ export default function PathMapCanvas({ pathMap }: { pathMap: PathMap }) {
     }
   }, [isTimeTravelMode, timelineMonths, setTimelineMonths]);
 
+  const { nodes, edges } = useMemo(() => pathMapToFlow(pathMap), [pathMap]);
+  const debouncedMonths = useDebounce(timelineMonths, 200);
+
   useEffect(() => {
     // Optional: when timeline changes and nodes appear, re-fit view or pan
     if (visibleNodes.length > 0) {
@@ -73,9 +76,6 @@ export default function PathMapCanvas({ pathMap }: { pathMap: PathMap }) {
       }, 50);
     }
   }, [debouncedMonths, fitView]); // Only trigger when the debounced timeline filter applies
-
-  const { nodes, edges } = useMemo(() => pathMapToFlow(pathMap), [pathMap]);
-  const debouncedMonths = useDebounce(timelineMonths, 200);
 
   const filteredNodes = useMemo(() => {
     return filterNodesByMonths(nodes, debouncedMonths);
@@ -126,16 +126,12 @@ export default function PathMapCanvas({ pathMap }: { pathMap: PathMap }) {
   };
 
   return (
-<<<<<<< HEAD
-    <div className="relative w-full h-full min-h-[600px]" style={{ flex: 1 }}>
-=======
-    <div className="absolute inset-0 z-0" onWheel={handleWheel}>
+    <div className="relative w-full h-full min-h-[600px]" style={{ flex: 1 }} onWheel={handleWheel}>
       {isTimeTravelMode && (
         <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 bg-primary text-primary-foreground px-4 py-2 rounded-full font-bold shadow-lg animate-pulse">
           ⏳ 타임 트래블 모드 활성화 (스크롤하여 시간 이동)
         </div>
       )}
->>>>>>> feat/light-theme-scroll-sync
       <ReactFlow
         nodes={visibleNodes}
         edges={visibleEdges}
@@ -146,13 +142,10 @@ export default function PathMapCanvas({ pathMap }: { pathMap: PathMap }) {
         fitViewOptions={{ padding: 0.2 }}
         minZoom={0.3}
         maxZoom={2.0}
-<<<<<<< HEAD
-        style={{ width: '100%', height: '100%' }}
-=======
+        style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}
         colorMode={resolvedTheme === 'light' ? 'light' : 'dark'}
         zoomOnScroll={!isTimeTravelMode}
         panOnScroll={!isTimeTravelMode}
->>>>>>> feat/light-theme-scroll-sync
       >
         <Background variant={BackgroundVariant.Dots} color={resolvedTheme === 'light' ? '#ccc' : '#555'} gap={20} />
       </ReactFlow>

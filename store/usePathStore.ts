@@ -2,7 +2,7 @@
 'use client';
 
 import { create } from 'zustand';
-import type { PathMap, PathId } from '@/types';
+import type { PathMap } from '@/types/path';
 
 interface PathStore {
   // Goal input state
@@ -14,8 +14,8 @@ interface PathStore {
   setPathMap: (pathMap: PathMap | null) => void;
 
   // UI state
-  selectedTrack: PathId | null;
-  setSelectedTrack: (track: PathId | null) => void;
+  selectedTrack: string | null;
+  setSelectedTrack: (track: string | null) => void;
   timelineMonths: number;
   setTimelineMonths: (months: number) => void;
 

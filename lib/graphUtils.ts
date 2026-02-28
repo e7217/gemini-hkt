@@ -1,12 +1,7 @@
 import dagre from '@dagrejs/dagre';
-import type { PathMap } from '@/types/path';
+import type { PathMap, PathNode } from '@/types/path';
 import type { FlowData, FlowNode, FlowEdge, GraphTransformOptions } from '@/types/flow';
-
-export const TRACK_COLORS: Record<string, any> = {
-  fast: { border: '#F59E0B', glow: 'rgba(245, 158, 11, 0.4)', bg: 'rgba(245, 158, 11, 0.1)', stroke: '#F59E0B' },
-  deep: { border: '#3B82F6', glow: 'rgba(59, 130, 246, 0.4)', bg: 'rgba(59, 130, 246, 0.1)', stroke: '#3B82F6' },
-  risk: { border: '#8B5CF6', glow: 'rgba(139, 92, 246, 0.4)', bg: 'rgba(139, 92, 246, 0.1)', stroke: '#8B5CF6' }
-};
+import { TRACK_COLORS, TrackId } from '@/lib/trackColors';
 
 export const NODE_DIMENSIONS: Record<string, { width: number; height: number }> = {
   startNode: { width: 80, height: 80 },
@@ -16,7 +11,7 @@ export const NODE_DIMENSIONS: Record<string, { width: number; height: number }> 
 };
 
 export function getEdgeStyle(track: string) {
-  const color = TRACK_COLORS[track]?.stroke || '#fff';
+  const color = TRACK_COLORS[track as TrackId] || '#fff';
   return { stroke: color, strokeWidth: 3, filter: `drop-shadow(0 0 5px ${color})` };
 }
 
@@ -43,47 +38,70 @@ export function pathMapToFlow(pathMap: PathMap, options?: GraphTransformOptions)
 
   const processedMergeIds = new Set<string>();
 
-  pathMap.paths.forEach(track => {
-    let prevId = pathMap.startNode.id;
-    track.nodes.forEach((node, idx) => {
-      // Avoid duplicate step nodes if they are merge points
-      const mp = node.isMergePoint ? pathMap.mergePoints?.find(m => m.id === node.id) : undefined;
+  const addNodesAndEdges = (node: PathNode, trackId: string, prevId: string) => {
+    const mp = node.isMergePoint ? pathMap.mergePoints?.find(m => m.id === node.id) : undefined;
+    let currentId = '';
 
-      if (mp) {
-        if (!processedMergeIds.has(mp.id)) {
-          processedMergeIds.add(mp.id);
-          nodes.push({
-            id: mp.id,
-            type: 'mergeNode',
-            data: { ...mp, type: 'merge', label: mp.title },
-            position: { x: 0, y: 0 }
-          });
-        }
-        edges.push({
-          id: `e-${prevId}-${node.id}`,
-          source: prevId,
-          target: node.id,
-          type: 'trackEdge',
-          data: { track: track.id }
-        });
-        prevId = node.id;
-      } else {
-        const uniqueId = `${track.id}-${node.id}`;
+    if (mp) {
+      currentId = mp.id;
+      if (!processedMergeIds.has(mp.id)) {
+        processedMergeIds.add(mp.id);
         nodes.push({
-          id: uniqueId,
-          type: 'stepNode',
-          data: { ...node, label: node.title, track: track.id, nodeId: node.id },
+          id: mp.id,
+          type: 'mergeNode',
+          data: { ...mp, type: 'merge', label: mp.title },
           position: { x: 0, y: 0 }
         });
-        edges.push({
-          id: `e-${prevId}-${uniqueId}`,
-          source: prevId,
-          target: uniqueId,
-          type: 'trackEdge',
-          data: { track: track.id }
-        });
-        prevId = uniqueId;
       }
+    } else {
+      currentId = `${trackId}-${node.id}`;
+      nodes.push({
+        id: currentId,
+        type: 'stepNode',
+        data: { ...node, label: node.title, track: trackId, nodeId: node.id },
+        position: { x: 0, y: 0 }
+      });
+    }
+
+    edges.push({
+      id: `e-${prevId}-${currentId}`,
+      source: prevId,
+      target: currentId,
+      type: 'trackEdge',
+      data: { track: trackId }
+    });
+
+    // Handle subNodes (Expansion C9)
+    if (node.subNodes && node.subNodes.length > 0) {
+      node.subNodes.forEach((sub: PathNode, subIdx: number) => {
+        const subId = `sub-${currentId}-${sub.id || subIdx}`;
+        nodes.push({
+          id: subId,
+          type: 'stepNode',
+          data: { ...sub, label: sub.title, track: trackId, nodeId: sub.id, isSubNode: true },
+          position: { x: 0, y: 0 },
+          // Make subnodes look slightly different or smaller?
+          // For now just standard
+        });
+        edges.push({
+          id: `e-${currentId}-${subId}`,
+          source: currentId,
+          target: subId,
+          type: 'trackEdge',
+          data: { track: trackId, isSubEdge: true },
+          animated: true,
+          style: { strokeDasharray: '5 5' }
+        });
+      });
+    }
+
+    return currentId;
+  };
+
+  pathMap.paths.forEach(track => {
+    let prevId = pathMap.startNode.id;
+    track.nodes.forEach((node) => {
+      prevId = addNodesAndEdges(node, track.id, prevId);
     });
 
     edges.push({

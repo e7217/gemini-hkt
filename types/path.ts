@@ -23,6 +23,7 @@ export interface PathNode {
   isMergePoint: boolean;
   tips: string[];
   monthsFromNow: number;                   // used for timeline slider filtering
+  subNodes?: PathNode[];                   // for node expansion (C9)
 }
 
 /**
@@ -33,6 +34,8 @@ export interface Path {
   id: string;         // e.g., "fast", "deep", "risk", or dynamic branch IDs
   name: string;       // display name, e.g., "Fast Track"
   color: string;      // hex color, e.g., "#F59E0B"
+  successProbability?: number; // e.g., 85 for 85%
+  difficulty?: "Low" | "Medium" | "High";
   nodes: PathNode[];
 }
 

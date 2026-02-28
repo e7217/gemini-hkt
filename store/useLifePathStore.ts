@@ -7,6 +7,7 @@ interface LifePathStore {
   isReverse: boolean;
   isLoading: boolean;
   isBranching: boolean;
+  isExpanding: boolean;
   pathMap: PathMap | null;
   error: string | null;
   
@@ -20,6 +21,7 @@ interface LifePathStore {
   setIsReverse: (isReverse: boolean) => void;
   generatePath: () => Promise<void>;
   addBranch: (pathId: string, nodeId: string, choice: string) => Promise<void>;
+  expandNode: (nodeId: string) => Promise<void>;
   clearError: () => void;
   reset: () => void;
   
@@ -35,6 +37,7 @@ export const useLifePathStore = create<LifePathStore>((set, get) => ({
   isReverse: false,
   isLoading: false,
   isBranching: false,
+  isExpanding: false,
   pathMap: null,
   error: null,
   
@@ -117,8 +120,64 @@ export const useLifePathStore = create<LifePathStore>((set, get) => ({
       set({ error: errorMessage, isBranching: false });
     }
   },
+  expandNode: async (nodeId) => {
+    const { pathMap, goal, selectedNode } = get();
+    if (!pathMap || !selectedNode) return;
+    set({ isExpanding: true, error: null });
+
+    try {
+      const response = await fetch('/api/paths/expand', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nodeId,
+          nodeTitle: selectedNode.title || selectedNode.label,
+          nodeDescription: selectedNode.description,
+          goal,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('단계 확장 생성에 실패했습니다.');
+      }
+
+      const expandData = await response.json();
+      
+      set((state) => {
+        if (!state.pathMap) return state;
+        
+        const updateNodeRecursively = (nodes: any[]): any[] => {
+          return nodes.map((node) => {
+            if (node.id === nodeId) {
+              return { ...node, subNodes: expandData.nodes };
+            }
+            if (node.subNodes) {
+              return { ...node, subNodes: updateNodeRecursively(node.subNodes) };
+            }
+            return node;
+          });
+        };
+
+        const updatedPaths = state.pathMap.paths.map((path) => ({
+          ...path,
+          nodes: updateNodeRecursively(path.nodes),
+        }));
+
+        return {
+          ...state,
+          pathMap: { ...state.pathMap, paths: updatedPaths },
+          isExpanding: false,
+          // Update selectedNode so DetailPanel reflects the change
+          selectedNode: { ...state.selectedNode, subNodes: expandData.nodes }
+        };
+      });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '단계 확장 생성에 실패했습니다.';
+      set({ error: errorMessage, isExpanding: false });
+    }
+  },
   clearError: () => set({ error: null }),
-  reset: () => set({ goal: '', isReverse: false, isLoading: false, isBranching: false, pathMap: null, error: null, selectedTrack: null, selectedNode: null, isPanelOpen: false, timelineMonths: 36 }),
+  reset: () => set({ goal: '', isReverse: false, isLoading: false, isBranching: false, isExpanding: false, pathMap: null, error: null, selectedTrack: null, selectedNode: null, isPanelOpen: false, timelineMonths: 36 }),
   
   setSelectedTrack: (track) => set({ selectedTrack: track }),
   setSelectedNode: (node) => set({ selectedNode: node }),

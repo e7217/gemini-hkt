@@ -33,6 +33,8 @@ export const PATH_MAP_SCHEMA = z.object({
       id: z.enum(["fast", "deep", "risk"]),
       name: z.string(),
       color: z.string(),
+      successProbability: z.number().optional(),
+      difficulty: z.enum(["Low", "Medium", "High"]).optional(),
       nodes: z.array(
         z.object({
           id: z.string(),
@@ -206,5 +208,36 @@ export function buildBranchPrompt(condition: string, startingNodeTitle: string, 
 
 위 조건이 발생했을 때 나타날 수 있는 1개의 새로운 하위 경로(sub-path)를 생성해주세요.
 이 새로운 경로의 첫 번째 노드는 분기 시작점 이후(${startingNodeMonths}개월 초과)의 시점을 가져야 합니다.
+결과를 JSON으로 반환하세요.`;
+}
+
+export const EXPAND_RESPONSE_SCHEMA = z.object({
+  nodes: z.array(
+    z.object({
+      id: z.string(),
+      title: z.string(),
+      description: z.string(),
+      duration: z.string(),
+      difficulty: z.enum(["Low", "Medium", "High"]),
+      tips: z.array(z.string()),
+    })
+  ).min(3).max(5),
+});
+
+export const EXPAND_SYSTEM_INSTRUCTION = `Role: You are a life path consultant. You are providing a detailed breakdown of a single step into smaller, actionable sub-tasks.
+
+Output Format: Respond ONLY with valid JSON. Strictly follow the provided JSON schema.
+
+Rules:
+- Generate 3 to 5 sub-tasks that together help achieve the parent step.
+- All content fields MUST be in Korean.`;
+
+export function buildExpandPrompt(stepTitle: string, stepDescription: string, goal: string): string {
+  return `최종 목표: ${goal}
+분해할 단계: ${stepTitle}
+단계 설명: ${stepDescription}
+
+이 단계를 구체적으로 실행하기 위한 3~5개의 세부 작업(sub-tasks)으로 나누어주세요.
+각 작업은 구체적이고 실천 가능해야 합니다.
 결과를 JSON으로 반환하세요.`;
 }

@@ -16,18 +16,20 @@ interface DetailPanelProps {
 }
 
 export function DetailPanel({ node, isOpen, onClose }: DetailPanelProps) {
-  const { addBranch, isBranching } = useLifePathStore();
+  const { addBranch, isBranching, expandNode, isExpanding } = useLifePathStore();
   const [condition, setCondition] = useState('');
 
   if (!node) return null;
 
   const handleAddBranch = async () => {
     if (!condition.trim()) return;
-    // Assuming node.id contains the node ID and node.track contains the path ID.
-    // In React Flow, node.id is the actual node ID. node.track should be the path ID.
     const pathId = node.track || 'custom';
     await addBranch(pathId, node.id, condition);
     setCondition('');
+  };
+
+  const handleExpandNode = async () => {
+    await expandNode(node.id);
   };
 
   return (
@@ -87,6 +89,51 @@ export function DetailPanel({ node, isOpen, onClose }: DetailPanelProps) {
         
         <CardContent>
           {renderMergeInfo(node)}
+          
+          <section className="mt-4">
+            <Button
+              variant="outline"
+              className="w-full border-dashed border-2 hover:border-primary hover:text-primary transition-all py-6 h-auto flex flex-col gap-1"
+              onClick={handleExpandNode}
+              disabled={isExpanding}
+            >
+              {isExpanding ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin mb-1" />
+                  단계 분해 중...
+                </>
+              ) : (
+                <>
+                  <span className="font-bold text-base">🔍 단계 상세 분해</span>
+                  <span className="text-xs text-muted-foreground">AI가 이 단계를 실천 가능한 작은 단위로 나누어줍니다</span>
+                </>
+              )}
+            </Button>
+          </section>
+
+          {node.subNodes && node.subNodes.length > 0 && (
+            <section className="mt-8 animate-in fade-in slide-in-from-top-2 duration-500">
+              <h3 className="font-semibold mb-4 flex items-center gap-2">📋 상세 액션 플랜</h3>
+              <div className="space-y-4">
+                {node.subNodes.map((sub: any, i: number) => (
+                  <div key={i} className="p-3 rounded-lg border bg-muted/30 relative overflow-hidden group">
+                    <div className="absolute left-0 top-0 w-1 h-full bg-primary/40 group-hover:bg-primary transition-colors" />
+                    <div className="flex justify-between items-start mb-1">
+                      <h4 className="font-medium text-sm">{sub.title}</h4>
+                      <Badge variant="outline" className="text-[10px] h-4 px-1">{sub.duration}</Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed mb-2">{sub.description}</p>
+                    {sub.tips && sub.tips.length > 0 && (
+                      <div className="bg-background/50 p-2 rounded text-[10px] text-muted-foreground italic">
+                        " {sub.tips[0]} "
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
           {renderTips(node)}
 
           <section className="mt-8 border-t pt-6">

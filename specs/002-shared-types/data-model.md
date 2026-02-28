@@ -1,0 +1,207 @@
+# Data Model: BE-02 공유 타입 정의 (Shared TypeScript Types)
+
+**Phase 1 Design** | **Date**: 2026-02-27 | **Branch**: `001-shared-types`
+
+## Type Hierarchy
+
+```
+PathMap (top-level container)
+├── startNode: StartGoalNode
+├── goalNode: StartGoalNode
+├── paths: Path[]
+│   └── Path
+│       └── nodes: PathNode[]
+└── mergePoints: MergePoint[]
+```
+
+---
+
+## Complete Type Definitions
+
+### Core Enum
+
+```typescript
+/**
+ * TrackType represents the three predefined life path tracks.
+ * Values match the path IDs used in the Gemini prompt schema.
+ */
+export enum TrackType {
+  Fast = "fast",   // Fast Track: 빠른 성과, 4~5개 노드 (#F59E0B gold)
+  Deep = "deep",   // Deep Dive: 깊이 있는 학습, 5~6개 노드 (#3B82F6 blue)
+  Risk = "risk",   // Risk Path: 창의적 탐험/위험 고려, 4~5개 노드 (#8B5CF6 purple)
+}
+```
+
+### Core Interfaces
+
+```typescript
+/**
+ * PathNode represents a single step or milestone in a life/career path.
+ * When isMergePoint is true, this node is accessible from multiple paths.
+ */
+export interface PathNode {
+  id: string;
+  title: string;
+  description: string;
+  duration: string;                        // e.g., "1-3개월"
+  difficulty: "Low" | "Medium" | "High";
+  isMergePoint: boolean;
+  tips: string[];
+  monthsFromNow: number;                   // used for timeline slider filtering
+}
+
+/**
+ * Path represents a single track (Fast/Deep/Risk) with an ordered sequence of nodes.
+ * id is string (not literal union) to support dynamically generated branch sub-paths.
+ */
+export interface Path {
+  id: string;         // e.g., "fast", "deep", "risk", or dynamic branch IDs
+  name: string;       // display name, e.g., "Fast Track"
+  color: string;      // hex color, e.g., "#F59E0B"
+  nodes: PathNode[];
+}
+
+/**
+ * StartGoalNode is a simplified node for startNode and goalNode in PathMap.
+ * It does not carry timeline or difficulty metadata.
+ */
+export interface StartGoalNode {
+  id: string;
+  title: string;
+  description: string;
+}
+
+/**
+ * MergePoint represents a convergence point where multiple paths meet.
+ */
+export interface MergePoint {
+  id: string;
+  title: string;
+  connectedPaths: string[];   // path IDs that converge at this point
+  message: string;            // motivational message displayed in UI
+}
+
+/**
+ * PathMap is the top-level container for a complete Gemini AI path simulation response.
+ */
+export interface PathMap {
+  startNode: StartGoalNode;
+  goalNode: StartGoalNode;
+  paths: Path[];
+  mergePoints: MergePoint[];
+}
+```
+
+### Supporting Interfaces
+
+```typescript
+/**
+ * TimelineMetadata captures temporal information for a node.
+ * Corresponds to B34 (타임라인 데이터 구조).
+ */
+export interface TimelineMetadata {
+  duration: string;
+  monthsFromNow: number;
+  estimatedEndDate?: Date;
+}
+
+/**
+ * AnonymousSession represents an anonymous user session.
+ * Corresponds to B22 (익명 세션 관리).
+ */
+export interface AnonymousSession {
+  sessionId: string;
+  createdAt: Date;
+  expiresAt: Date;
+  pathHistory: string[];
+}
+```
+
+### API Contract Types
+
+```typescript
+/**
+ * SimulateRequest — POST /api/paths/simulate request body
+ */
+export type SimulateRequest = {
+  goal: string;
+  timeframe?: "1y" | "3y" | "5y";
+};
+
+/**
+ * SimulateResponse — POST /api/paths/simulate response body
+ */
+export type SimulateResponse = PathMap;
+
+/**
+ * BranchRequest — POST /api/paths/branch request body
+ * Includes currentPathMap because the server is stateless.
+ */
+export type BranchRequest = {
+  pathId: string;
+  currentNodeId: string;
+  choice?: string;
+  currentPathMap: PathMap;
+};
+
+/**
+ * BranchResponse — POST /api/paths/branch response body
+ */
+export type BranchResponse = {
+  paths: Path[];
+  mergePoints?: MergePoint[];
+};
+```
+
+---
+
+## Entity Relationships
+
+```
+SimulateRequest ──→ [Gemini API] ──→ SimulateResponse (= PathMap)
+                                              │
+                    ┌─────────────────────────┤
+                    ▼                         ▼
+               StartGoalNode               Path[]
+               (startNode)                    │
+               StartGoalNode            PathNode[]
+               (goalNode)              MergePoint[]
+
+BranchRequest ──→ [Gemini API] ──→ BranchResponse
+  (contains                         (new Path[] to
+  currentPathMap)                    merge into PathMap)
+```
+
+---
+
+## Field-Level Constraints
+
+| Entity | Field | Type | Constraints |
+|--------|-------|------|------------|
+| PathNode | id | string | Unique within a PathMap |
+| PathNode | difficulty | union | Must be "Low" \| "Medium" \| "High" |
+| PathNode | monthsFromNow | number | Used for timeline slider; must be ≥0 (convention, not enforced by type) |
+| PathNode | tips | string[] | May be empty array |
+| Path | id | string | Typically matches TrackType value; dynamic for branch sub-paths |
+| Path | color | string | Hex color string; convention #RRGGBB |
+| MergePoint | connectedPaths | string[] | References Path.id values |
+| SimulateRequest | timeframe | optional union | "1y" \| "3y" \| "5y" or undefined |
+| BranchRequest | currentPathMap | PathMap | Required — server is stateless |
+| TrackType | Fast | "fast" | Matches Path.id convention for Fast Track |
+| TrackType | Deep | "deep" | Matches Path.id convention for Deep Dive |
+| TrackType | Risk | "risk" | Matches Path.id convention for Risk Path |
+
+---
+
+## File Output
+
+**Target file**: `types/path.ts` (project root)
+
+All 10 definitions exported as named exports. No default exports. No runtime logic — pure type declarations only.
+
+**Total exports**: 10
+- Interfaces: PathNode, Path, StartGoalNode, MergePoint, PathMap, TimelineMetadata, AnonymousSession (7)
+- Enum: TrackType (1)
+- Type aliases: SimulateRequest, SimulateResponse, BranchRequest, BranchResponse (4, grouped as API contracts)
+
+Note: SimulateResponse = PathMap, so it is technically a re-export alias.

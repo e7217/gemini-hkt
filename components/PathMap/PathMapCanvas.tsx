@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactFlow, Background, BackgroundVariant, NodeMouseHandler } from '@xyflow/react';
+import { ReactFlow, Background, BackgroundVariant, NodeMouseHandler, useReactFlow } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { pathMapToFlow } from '@/lib/graphUtils';
 import type { PathMap } from '@/types/path';
@@ -9,7 +9,7 @@ import StepNode from '../nodes/StepNode';
 import GoalNode from '../nodes/GoalNode';
 import MergeNode from '../nodes/MergeNode';
 import TrackEdge from './TrackEdge';
-import { useMemo } from 'react';
+import { useMemo, useState, useCallback, useEffect } from 'react';
 import { useLifePathStore } from '@/store/useLifePathStore';
 import { TrackLegend } from '../TrackLegend';
 import { DetailPanel } from '../DetailPanel';
@@ -17,6 +17,7 @@ import { TrackId } from '@/lib/trackColors';
 import { useDebounce } from '@/hooks/useDebounce';
 import { filterNodesByMonths, filterEdgesByNodes } from '@/lib/timelineFilter';
 import { TimelineSlider } from '../TimelineSlider';
+import { useTheme } from 'next-themes';
 
 const nodeTypes = {
   startNode: StartNode,
@@ -30,7 +31,48 @@ const edgeTypes = {
 };
 
 export default function PathMapCanvas({ pathMap }: { pathMap: PathMap }) {
-  const { selectedTrack, setSelectedTrack, selectedNode, setSelectedNode, isPanelOpen, setIsPanelOpen, timelineMonths } = useLifePathStore();
+  const { resolvedTheme } = useTheme();
+  const { selectedTrack, setSelectedTrack, selectedNode, setSelectedNode, isPanelOpen, setIsPanelOpen, timelineMonths, setTimelineMonths } = useLifePathStore();
+  const { fitView } = useReactFlow();
+
+  const [isTimeTravelMode, setIsTimeTravelMode] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Shift') setIsTimeTravelMode(true);
+    };
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === 'Shift') setIsTimeTravelMode(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
+
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    if (isTimeTravelMode) {
+      const deltaY = e.deltaY;
+      const step = 6;
+      let newMonths = timelineMonths + (deltaY > 0 ? step : -step);
+      if (newMonths < 0) newMonths = 0;
+      if (newMonths > 60) newMonths = 60;
+      if (newMonths !== timelineMonths) {
+        setTimelineMonths(newMonths);
+      }
+    }
+  }, [isTimeTravelMode, timelineMonths, setTimelineMonths]);
+
+  useEffect(() => {
+    // Optional: when timeline changes and nodes appear, re-fit view or pan
+    if (visibleNodes.length > 0) {
+      setTimeout(() => {
+        fitView({ padding: 0.2, duration: 800 });
+      }, 50);
+    }
+  }, [debouncedMonths, fitView]); // Only trigger when the debounced timeline filter applies
 
   const { nodes, edges } = useMemo(() => pathMapToFlow(pathMap), [pathMap]);
   const debouncedMonths = useDebounce(timelineMonths, 200);
@@ -84,7 +126,12 @@ export default function PathMapCanvas({ pathMap }: { pathMap: PathMap }) {
   };
 
   return (
-    <div className="relative w-full h-full">
+    <div className="absolute inset-0 z-0" onWheel={handleWheel}>
+      {isTimeTravelMode && (
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 bg-primary text-primary-foreground px-4 py-2 rounded-full font-bold shadow-lg animate-pulse">
+          ⏳ 타임 트래블 모드 활성화 (스크롤하여 시간 이동)
+        </div>
+      )}
       <ReactFlow
         nodes={visibleNodes}
         edges={visibleEdges}
@@ -92,12 +139,16 @@ export default function PathMapCanvas({ pathMap }: { pathMap: PathMap }) {
         edgeTypes={edgeTypes}
         onNodeClick={handleNodeClick}
         fitView
+        fitViewOptions={{ padding: 0.2 }}
         minZoom={0.3}
         maxZoom={2.0}
+        colorMode={resolvedTheme === 'light' ? 'light' : 'dark'}
+        zoomOnScroll={!isTimeTravelMode}
+        panOnScroll={!isTimeTravelMode}
       >
-        <Background variant={BackgroundVariant.Dots} color="#333" gap={20} />
+        <Background variant={BackgroundVariant.Dots} color={resolvedTheme === 'light' ? '#ccc' : '#555'} gap={20} />
       </ReactFlow>
-      
+
       <TrackLegend selectedTrack={selectedTrack} onSelectTrack={handleSelectTrack} />
       <TimelineSlider />
       <DetailPanel node={selectedNode} isOpen={isPanelOpen} onClose={handlePanelClose} />

@@ -24,7 +24,7 @@ export function DetailPanel({ node, isOpen, onClose }: DetailPanelProps) {
           <button
             onClick={onClose}
             aria-label="패널 닫기"
-            className="absolute top-4 right-4 p-2 text-gray-500 hover:text-foreground rounded-full"
+            className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-foreground rounded-full"
           >
             ✕
           </button>

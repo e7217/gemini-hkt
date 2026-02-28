@@ -44,7 +44,7 @@ export function LoadingAnimation() {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-gray-950/90 transition-opacity duration-500 ease-out"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 transition-opacity duration-500 ease-out"
       style={{
         opacity: isVisible ? 1 : 0,
         pointerEvents: isVisible ? 'auto' : 'none',
@@ -58,19 +58,19 @@ export function LoadingAnimation() {
           🌱
         </div>
         <div
-          className="w-12 h-12 rounded-full border-4 border-gray-700 border-t-emerald-400 animate-spin"
+          className="w-12 h-12 rounded-full border-4 border-muted border-t-emerald-400 animate-spin"
           aria-hidden="true"
         />
         <p
           key={messageIndex}
-          className="text-white text-lg font-medium tracking-wide loading-message-enter"
+          className="text-foreground text-lg font-medium tracking-wide loading-message-enter"
           role="status"
           aria-live="polite"
           aria-label="경로 생성 진행 상황"
         >
           {LOADING_MESSAGES[messageIndex]}
         </p>
-        <p className="text-gray-400 text-sm">잠시만 기다려 주세요...</p>
+        <p className="text-muted-foreground text-sm">잠시만 기다려 주세요...</p>
       </div>
     </div>
   )

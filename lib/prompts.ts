@@ -137,7 +137,7 @@ Output Format:
 - Respond ONLY with valid JSON. No markdown backticks, no preamble, no explanation.
 - The JSON structure must strictly follow the provided schema.
 - All text content (titles, descriptions, tips, messages) should be in Korean as requested by the user, but the IDs and technical fields must be in English.
-\`;
+`;
 
 /**
  * Builds the user prompt for the path generation request.
@@ -145,13 +145,13 @@ Output Format:
 export function buildUserPrompt(goal: string, timeframe: TimeframeKey): string {
   const months = TIMEFRAME_MONTHS[timeframe];
   
-  return \`User Goal: "\${goal}"
-Timeframe: \${timeframe} (\${months} months)
+  return `User Goal: "${goal}"
+Timeframe: ${timeframe} (${months} months)
 
-Please generate 3 paths to achieve this goal within \${months} months.
+Please generate 3 paths to achieve this goal within ${months} months.
 Important: 
 1. RESPOND IN KOREAN (제목, 설명, 팁, 메시지 등 모든 텍스트 콘텐츠는 반드시 한국어로 작성하세요).
-2. The 'monthsFromNow' value for each node must be between 0 and \${months}.
+2. The 'monthsFromNow' value for each node must be between 0 and ${months}.
 3. The paths should feel distinct (Fast Track, Deep Dive, Risk Path).
-\`;
+`;
 }

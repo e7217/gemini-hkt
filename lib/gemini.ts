@@ -188,14 +188,16 @@ async function withTimeout<T>(promise: Promise<T>, attemptNumber: number): Promi
  * Builds the generate content request (T013)
  */
 function buildGenerateContentRequest(prompt: string, systemInstruction?: string) {
+  const config: any = {
+    responseMimeType: "application/json",
+  };
+  if (systemInstruction) {
+    config.systemInstruction = systemInstruction;
+  }
   return {
-    contents: [{ role: "user", parts: [{ text: prompt }] }],
-    systemInstruction: systemInstruction 
-      ? { parts: [{ text: systemInstruction }] }
-      : undefined,
-    generationConfig: {
-      responseMimeType: "application/json",
-    },
+    model: GEMINI_MODEL,
+    contents: prompt,
+    config: config
   };
 }
 
@@ -222,15 +224,14 @@ async function callGeminiOnce<T>(
 ): Promise<T> {
   const { prompt, systemInstruction, schema } = params;
   const ai = getClient();
-  const model = ai.getGenerativeModel({ model: GEMINI_MODEL });
-
+  
   const request = buildGenerateContentRequest(prompt, systemInstruction);
   
   try {
     // Wrap with timeout (T021)
-    const result = await withTimeout(model.generateContent(request), attemptNumber);
+    const result = await withTimeout(ai.models.generateContent(request), attemptNumber);
     
-    const text = result.response.text();
+    const text = result.text;
     if (!text) {
       throw new Error("Gemini returned an empty response");
     }

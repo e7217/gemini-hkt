@@ -32,6 +32,7 @@ export function GoalInput() {
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <Input
             type="text"
+            maxLength={100}
             placeholder="이루고 싶은 목표를 입력하세요"
             value={goal}
             onChange={(e) => setGoal(e.target.value)}
@@ -45,14 +46,15 @@ export function GoalInput() {
               size="icon"
               onClick={handleRandomGoal}
               disabled={isLoading}
+              className="transition-colors duration-200"
               aria-label="랜덤 목표 선택"
             >
               🎲
             </Button>
             <Button
               type="submit"
-              disabled={isLoading || goal.trim() === ''}
-              className="flex-1"
+              disabled={isLoading || goal.trim().length === 0}
+              className="flex-1 transition-colors duration-200"
             >
               {isLoading ? (
                 <span className="flex items-center gap-2">

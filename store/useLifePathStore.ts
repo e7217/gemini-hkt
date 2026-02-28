@@ -54,7 +54,7 @@ export const useLifePathStore = create<LifePathStore>((set, get) => ({
       const data: PathMap = await response.json();
       set({ pathMap: data, isLoading: false });
     } catch (error) {
-      set({ error: getErrorMessage(error), isLoading: false });
+      set({ error: '경로 생성을 실패했습니다. 다시 시도해 주세요.', isLoading: false });
     }
   },
   clearError: () => set({ error: null }),

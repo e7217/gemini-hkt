@@ -28,8 +28,10 @@ export function DetailPanel({ node, isOpen, onClose }: DetailPanelProps) {
           >
             ✕
           </button>
-          <CardTitle className="text-xl pr-8">{node.label || node.title}</CardTitle>
-          {node.description && <CardDescription>{node.description}</CardDescription>}
+          <CardTitle className="text-base font-semibold pr-8 line-clamp-2 leading-tight">
+            {node.label || node.title}
+          </CardTitle>
+          {node.description && <CardDescription className="text-sm">{node.description}</CardDescription>}
           
           <div className="flex flex-wrap gap-2 mt-4">
             {node.track && TRACK_COLORS[node.track as TrackId] && (

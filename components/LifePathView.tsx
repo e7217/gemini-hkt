@@ -2,25 +2,28 @@
 
 import { useLifePathStore } from '@/store/useLifePathStore';
 import { GoalInput } from './GoalInput';
+import PathMap from './PathMap';
 
 export function LifePathView() {
   const pathMap = useLifePathStore((s) => s.pathMap);
 
   if (pathMap) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8 gap-4">
-        <h1 className="text-2xl font-bold text-foreground mb-4">
-          경로가 생성되었습니다!
-        </h1>
-        <p className="text-foreground">
-          (경로 맵 렌더링은 FE-03 React Flow 맵 이슈에서 구현됩니다.)
-        </p>
-        <button
-          onClick={() => useLifePathStore.getState().reset()}
-          className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md"
-        >
-          다시 하기
-        </button>
+      <div className="min-h-screen bg-background flex flex-col p-4 gap-4">
+        <div className="flex justify-between items-center mb-2">
+          <h1 className="text-2xl font-bold text-foreground">
+            나의 인생 경로
+          </h1>
+          <button
+            onClick={() => useLifePathStore.getState().reset()}
+            className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md text-sm"
+          >
+            다시 하기
+          </button>
+        </div>
+        <div className="flex-1 w-full h-full relative">
+          <PathMap pathMap={pathMap} />
+        </div>
       </div>
     );
   }

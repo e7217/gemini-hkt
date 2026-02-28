@@ -117,10 +117,20 @@
 }
 
 @layer base {
+  :root {
+    --track-fast: #F59E0B;
+    --track-deep: #3B82F6;
+    --track-risk: #8B5CF6;
+    --track-fast-glow: rgba(245, 158, 11, 0.5);
+    --track-deep-glow: rgba(59, 130, 246, 0.5);
+    --track-risk-glow: rgba(139, 92, 246, 0.5);
+  }
+
   * {
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    background-color: #0a0a0f;
+    color: #f9fafb;
   }
 }

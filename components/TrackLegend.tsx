@@ -14,7 +14,7 @@ export function TrackLegend({ selectedTrack, onSelectTrack }: TrackLegendProps) 
   const pathMap = useLifePathStore((s) => s.pathMap);
 
   return (
-    <div className="absolute top-4 left-4 z-10 bg-background/60 backdrop-blur-md rounded-xl p-3 flex flex-col gap-2">
+    <div className="absolute top-16 left-4 z-10 bg-background/60 backdrop-blur-md rounded-xl p-3 flex flex-col gap-2">
       {tracks.map((track) => {
         const pathData = pathMap?.paths?.find(p => p.id === track);
         

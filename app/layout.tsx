@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LifePath",
+  title: "Branch",
   description: "Explore your life path.",
 };
 

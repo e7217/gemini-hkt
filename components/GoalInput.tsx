@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useLifePathStore } from '@/store/useLifePathStore';
 import { getRandomGoal } from '@/data/presets';
-import { Loader2 } from 'lucide-react';
+import { Loader2, GitBranch } from 'lucide-react';
 
 export function GoalInput() {
   const goal = useLifePathStore((s) => s.goal);
@@ -28,9 +28,13 @@ export function GoalInput() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="flex flex-col gap-4 w-full max-w-lg px-4">
-        <h1 className="text-2xl font-bold text-center text-foreground">
-          나의 인생 경로를 탐색하세요
+        <h1 className="text-3xl font-bold text-center text-foreground flex items-center justify-center gap-2">
+          <GitBranch className="h-8 w-8 text-primary" />
+          Branch
         </h1>
+        <p className="text-muted-foreground text-center mb-4">
+          나의 인생 경로를 탐색하세요
+        </p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <Input
             type="text"

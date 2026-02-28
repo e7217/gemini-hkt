@@ -11,6 +11,8 @@ export interface StepNodeData {
   label: string;
   track: string;
   nodeId: string;
+  timeEstimate?: string;
+  opportunityCost?: string;
 }
 
 export interface GoalNodeData {

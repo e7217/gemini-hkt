@@ -67,7 +67,22 @@ export function DetailPanel({ node, isOpen, onClose }: DetailPanelProps) {
             {node.monthsFromNow !== undefined && (
               <Badge variant="outline">{node.monthsFromNow}개월 후</Badge>
             )}
+            {node.timeEstimate && (
+              <Badge variant="outline" className="border-blue-200 text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-300">
+                시간: {node.timeEstimate}
+              </Badge>
+            )}
           </div>
+          
+          {node.opportunityCost && (
+            <div className="mt-4 p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-md text-orange-800 dark:text-orange-300 text-sm flex gap-2 items-start">
+              <span className="text-orange-500 font-bold mt-0.5">!</span>
+              <div>
+                <strong className="block mb-1">기회 비용 (Opportunity Cost)</strong>
+                {node.opportunityCost}
+              </div>
+            </div>
+          )}
         </CardHeader>
         
         <CardContent>
